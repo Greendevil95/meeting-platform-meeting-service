@@ -1,0 +1,162 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="2026-04-01-create-meetings" author="codex">
+        <createTable tableName="meetings">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_meetings"/>
+            </column>
+            <column name="organizer_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+            <column name="start_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="meetings" indexName="idx_meetings_organizer_start">
+            <column name="organizer_id"/>
+            <column name="start_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2026-04-02-create-meeting-participants" author="codex">
+        <createTable tableName="meeting_participants">
+            <column name="meeting_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="response_status" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="meeting_participants"
+                       columnNames="meeting_id, user_id"
+                       constraintName="pk_meeting_participants"/>
+
+        <addForeignKeyConstraint baseTableName="meeting_participants"
+                                 baseColumnNames="meeting_id"
+                                 referencedTableName="meetings"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_meeting_participants_meeting"
+                                 onDelete="CASCADE"/>
+
+        <createIndex tableName="meeting_participants" indexName="idx_meeting_participants_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2026-04-03-create-user-read-model" author="codex">
+        <createTable tableName="user_read_model">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_user_read_model"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2026-04-04-create-outbox-events" author="codex">
+        <createTable tableName="outbox_events">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_outbox_events"/>
+            </column>
+            <column name="aggregate_type" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aggregate_id" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_type" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload_json" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="retry_count" type="integer" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="published_at" type="timestamp with time zone"/>
+        </createTable>
+
+        <createIndex tableName="outbox_events" indexName="idx_outbox_events_status_created">
+            <column name="status"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2026-04-06-rename-outbox-payload-to-event-json" author="codex">
+        <renameColumn tableName="outbox_events"
+                      oldColumnName="payload_json"
+                      newColumnName="event_json"
+                      columnDataType="jsonb"/>
+    </changeSet>
+
+    <changeSet id="2026-04-07-add-outbox-event-id" author="codex">
+        <addColumn tableName="outbox_events">
+            <column name="event_id" type="uuid"/>
+        </addColumn>
+
+        <update tableName="outbox_events">
+            <column name="event_id" valueComputed="id"/>
+            <where>event_id IS NULL</where>
+        </update>
+
+        <addNotNullConstraint tableName="outbox_events"
+                              columnName="event_id"
+                              columnDataType="uuid"/>
+
+        <addUniqueConstraint tableName="outbox_events"
+                             columnNames="event_id"
+                             constraintName="uk_outbox_events_event_id"/>
+    </changeSet>
+
+</databaseChangeLog>

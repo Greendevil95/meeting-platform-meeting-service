@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: meeting-service
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+    url: jdbc:postgresql://localhost:5433/meetingdb
+    username: admin
+    password: admin
+  kafka:
+    bootstrap-servers: localhost:29092
+    producer:
+      acks: all
+      retries: 5
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: meeting-service
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+
+meeting:
+  redis:
+    meeting-ttl: 30m
+  kafka:
+    prefixes:
+      user-service-prefix: user-service
+      meeting-service-prefix: meeting-service
+    topics:
+      user-created: ${meeting.kafka.prefixes.user-service-prefix}.user-created
+      user-updated: ${meeting.kafka.prefixes.user-service-prefix}.user-updated
+      user-deleted: ${meeting.kafka.prefixes.user-service-prefix}.user-deleted
+      user-status-changed: ${meeting.kafka.prefixes.user-service-prefix}.user-status-changed
+      meeting-created: ${meeting.kafka.prefixes.meeting-service-prefix}.meeting-created
+      meeting-updated: ${meeting.kafka.prefixes.meeting-service-prefix}.meeting-updated
+      meeting-cancelled: ${meeting.kafka.prefixes.meeting-service-prefix}.meeting-cancelled
+      meeting-participant-added: ${meeting.kafka.prefixes.meeting-service-prefix}.meeting-participant-added
+      meeting-participant-removed: ${meeting.kafka.prefixes.meeting-service-prefix}.meeting-participant-removed
