@@ -1,6 +1,6 @@
 package com.example.meetingservice.repository;
 
-import com.example.meetingservice.domain.MeetingStatus;
+import com.example.meetingservice.entity.MeetingStatus;
 import com.example.meetingservice.entity.MeetingEntity;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -25,7 +25,7 @@ public interface MeetingRepository extends JpaRepository<MeetingEntity, UUID> {
             order by m.start_at asc
             """, nativeQuery = true)
     List<MeetingEntity> findUserMeetings(
-            @Param("userId") Long userId,
+            @Param("userId") UUID userId,
             @Param("fromTime") OffsetDateTime fromTime,
             @Param("toTime") OffsetDateTime toTime
     );

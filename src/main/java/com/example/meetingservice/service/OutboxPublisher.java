@@ -12,7 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -26,7 +26,7 @@ public class OutboxPublisher {
     private final OutboxEventRepository outboxEventRepository;
     private final KafkaTopicsProperties topicsProperties;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     @Transactional
     @Scheduled(fixedDelayString = "PT3S")
@@ -34,7 +34,7 @@ public class OutboxPublisher {
         List<OutboxEventEntity> pending = outboxEventRepository.findTop100ByStatusOrderByCreatedAtAsc(OutboxStatus.PENDING);
         for (OutboxEventEntity event : pending) {
             try {
-                MeetingEvent kafkaEvent = objectMapper.readValue(event.getEventJson(), event.getEventType().eventClass());
+                MeetingEvent kafkaEvent = jsonMapper.convertValue(event.getEventJson(), event.getEventType().eventClass());
                 kafkaTemplate.send(resolveTopic(event.getEventType()), event.getAggregateId(), kafkaEvent).get();
                 event.setStatus(OutboxStatus.PUBLISHED);
                 event.setPublishedAt(OffsetDateTime.now());
@@ -48,7 +48,7 @@ public class OutboxPublisher {
         }
     }
 
-    private String resolveTopic(MeetingEventType eventType) {
+    private String resolveTopic(EventType eventType) {
         return switch (eventType) {
             case MEETING_CREATED -> topicsProperties.getMeetingCreated();
             case MEETING_UPDATED -> topicsProperties.getMeetingUpdated();

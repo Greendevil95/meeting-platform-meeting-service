@@ -1,6 +1,6 @@
 package com.example.meetingservice.api.dto;
 
-import com.example.meetingservice.domain.MeetingStatus;
+import com.example.meetingservice.entity.MeetingStatus;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 

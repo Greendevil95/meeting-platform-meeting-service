@@ -1,11 +1,12 @@
 package com.example.meetingservice.service;
 
-import com.example.meetingservice.domain.UserRole;
-import com.example.meetingservice.domain.UserStatus;
+import com.example.meetingservice.entity.UserRole;
+import com.example.meetingservice.entity.UserStatus;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 public record UserProfile(
-        Long userId,
+        UUID userId,
         String username,
         String email,
         UserStatus status,

@@ -7,10 +7,10 @@ public record MeetingParticipantRemovedEvent(
         UUID eventId,
         OffsetDateTime occurredAt,
         UUID meetingId,
-        Long userId
+        UUID userId
 ) implements MeetingEvent {
     @Override
-    public MeetingEventType getEventType() {
-        return MeetingEventType.MEETING_PARTICIPANT_REMOVED;
+    public EventType getEventType() {
+        return EventType.MEETING_PARTICIPANT_REMOVED;
     }
 }

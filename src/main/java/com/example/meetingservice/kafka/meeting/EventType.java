@@ -1,6 +1,6 @@
 package com.example.meetingservice.kafka.meeting;
 
-public enum MeetingEventType {
+public enum EventType {
     MEETING_CREATED(MeetingCreatedEvent.class),
     MEETING_UPDATED(MeetingUpdatedEvent.class),
     MEETING_CANCELLED(MeetingCancelledEvent.class),
@@ -9,7 +9,7 @@ public enum MeetingEventType {
 
     private final Class<? extends MeetingEvent> eventClass;
 
-    MeetingEventType(Class<? extends MeetingEvent> eventClass) {
+    EventType(Class<? extends MeetingEvent> eventClass) {
         this.eventClass = eventClass;
     }
 

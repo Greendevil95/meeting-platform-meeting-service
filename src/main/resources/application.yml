@@ -1,3 +1,6 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: meeting-service
@@ -7,6 +10,9 @@ spring:
     url: jdbc:postgresql://localhost:5433/meetingdb
     username: admin
     password: admin
+  docker:
+    compose:
+      enabled: false
   kafka:
     bootstrap-servers: localhost:29092
     producer:
@@ -41,8 +47,8 @@ spring:
 
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: OFF
 
 meeting:
   redis:

@@ -1,7 +1,5 @@
 package com.example.meetingservice.entity;
 
-import com.example.meetingservice.domain.ParticipantRole;
-import com.example.meetingservice.domain.ResponseStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

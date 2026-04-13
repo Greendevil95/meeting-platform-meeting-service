@@ -1,12 +1,11 @@
 package com.example.meetingservice.entity;
 
-import com.example.meetingservice.domain.UserRole;
-import com.example.meetingservice.domain.UserStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_read_model")
@@ -16,7 +15,7 @@ public class UserReadModelEntity {
 
     @Id
     @Column(name = "user_id")
-    private Long userId;
+    private UUID userId;
 
     @Column(name = "username", nullable = false)
     private String username;

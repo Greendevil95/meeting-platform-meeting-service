@@ -3,7 +3,7 @@ package com.example.meetingservice.service;
 import com.example.meetingservice.api.dto.MeetingResponse;
 import com.example.meetingservice.api.dto.MeetingSummaryResponse;
 import com.example.meetingservice.config.CacheConfig;
-import com.example.meetingservice.domain.MeetingStatus;
+import com.example.meetingservice.entity.MeetingStatus;
 import com.example.meetingservice.entity.MeetingEntity;
 import com.example.meetingservice.entity.MeetingParticipantEntity;
 import com.example.meetingservice.exception.NotFoundException;
@@ -27,7 +27,7 @@ public class MeetingQueryService {
     private final MeetingValidationService meetingValidationService;
 
     @Transactional(readOnly = true)
-    public List<MeetingSummaryResponse> list(Long userId, OffsetDateTime from, OffsetDateTime to) {
+    public List<MeetingSummaryResponse> list(UUID userId, OffsetDateTime from, OffsetDateTime to) {
         meetingValidationService.validateTimeRange(from, to);
         return meetingRepository.findUserMeetings(userId, from, to)
                 .stream()

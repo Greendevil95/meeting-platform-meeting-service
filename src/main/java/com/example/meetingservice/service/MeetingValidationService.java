@@ -1,6 +1,6 @@
 package com.example.meetingservice.service;
 
-import com.example.meetingservice.domain.UserStatus;
+import com.example.meetingservice.entity.UserStatus;
 import com.example.meetingservice.entity.MeetingEntity;
 import com.example.meetingservice.exception.BadRequestException;
 import com.example.meetingservice.exception.ConflictException;
@@ -22,7 +22,7 @@ public class MeetingValidationService {
     private final MeetingParticipantRepository participantRepository;
     private final UserReadModelService userReadModelService;
 
-    public void assertOrganizer(MeetingEntity meeting, Long requestorId) {
+    public void assertOrganizer(MeetingEntity meeting, UUID requestorId) {
         if (!meeting.getOrganizerId().equals(requestorId)) {
             throw new ForbiddenException("Only organizer can modify meeting");
         }
@@ -34,13 +34,13 @@ public class MeetingValidationService {
         }
     }
 
-    public void validateUsersActive(List<Long> userIds) {
+    public void validateUsersActive(List<UUID> userIds) {
         for (var id : userIds) {
             validateUserActive(id);
         }
     }
 
-    public void validateUserActive(Long userId) {
+    public void validateUserActive(UUID userId) {
         var profile = userReadModelService.findUser(userId)
                 .orElseThrow(() -> new NotFoundException("Unknown user: " + userId));
         if (profile.status() == UserStatus.DELETED) {
@@ -51,7 +51,7 @@ public class MeetingValidationService {
         }
     }
 
-    public void validateUsersForMeeting(List<Long> participantIds, Long organizerId) {
+    public void validateUsersForMeeting(List<UUID> participantIds, UUID organizerId) {
         if (organizerId == null) {
             throw new BadRequestException("Organizer is missing");
         }
@@ -68,7 +68,7 @@ public class MeetingValidationService {
         );
     }
 
-    public void ensureNoScheduleConflicts(Collection<Long> userIds, OffsetDateTime startAt, OffsetDateTime endAt, UUID excludedMeetingId) {
+    public void ensureNoScheduleConflicts(Collection<UUID> userIds, OffsetDateTime startAt, OffsetDateTime endAt, UUID excludedMeetingId) {
         long conflicts = excludedMeetingId == null
                 ? participantRepository.countConflicts(userIds, startAt, endAt)
                 : participantRepository.countConflictsExcludingMeeting(excludedMeetingId, userIds, startAt, endAt);

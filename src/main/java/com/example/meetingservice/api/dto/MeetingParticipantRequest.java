@@ -1,9 +1,11 @@
 package com.example.meetingservice.api.dto;
 
-import com.example.meetingservice.domain.ParticipantRole;
+import com.example.meetingservice.entity.ParticipantRole;
+
+import java.util.UUID;
 
 public record MeetingParticipantRequest(
-        Long userId,
+        UUID userId,
         ParticipantRole role
 ) {
 }

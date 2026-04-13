@@ -4,21 +4,20 @@ import com.example.meetingservice.entity.OutboxEventEntity;
 import com.example.meetingservice.entity.OutboxStatus;
 import com.example.meetingservice.kafka.meeting.MeetingEvent;
 import com.example.meetingservice.repository.OutboxEventRepository;
-import java.time.OffsetDateTime;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
+import java.time.OffsetDateTime;
+import java.util.Map;
+
+@RequiredArgsConstructor
 @Service
 public class OutboxService {
 
     private final OutboxEventRepository outboxEventRepository;
-    private final ObjectMapper objectMapper;
-
-    public OutboxService(OutboxEventRepository outboxEventRepository, ObjectMapper objectMapper) {
-        this.outboxEventRepository = outboxEventRepository;
-        this.objectMapper = objectMapper;
-    }
+    private final JsonMapper jsonMapper;
 
     public void enqueueEvent(String aggregateType,
                              String aggregateId,
@@ -31,14 +30,17 @@ public class OutboxService {
         outboxEvent.setStatus(OutboxStatus.PENDING);
         outboxEvent.setRetryCount(0);
         outboxEvent.setCreatedAt(OffsetDateTime.now());
-        outboxEvent.setEventJson(toJson(event));
+        outboxEvent.setEventJson(toMap(event));
         outboxEventRepository.save(outboxEvent);
     }
 
-    private String toJson(MeetingEvent eventPayload) {
+    private Map<String, Object> toMap(MeetingEvent eventPayload) {
         try {
-            return objectMapper.writeValueAsString(eventPayload);
-        } catch (JacksonException ex) {
+            return jsonMapper.convertValue(
+                    eventPayload,
+                    new TypeReference<>() {}
+            );
+        } catch (Exception ex) {
             throw new IllegalStateException("Cannot serialize outbox event", ex);
         }
     }

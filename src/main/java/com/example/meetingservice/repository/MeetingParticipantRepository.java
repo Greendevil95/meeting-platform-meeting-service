@@ -24,7 +24,7 @@ public interface MeetingParticipantRepository extends JpaRepository<MeetingParti
               and m.end_at > :startAt
             """, nativeQuery = true)
     long countConflicts(
-            @Param("users") Collection<Long> userIds,
+            @Param("userIds") Collection<UUID> userIds,
             @Param("startAt") OffsetDateTime startAt,
             @Param("endAt") OffsetDateTime endAt
     );
@@ -41,7 +41,7 @@ public interface MeetingParticipantRepository extends JpaRepository<MeetingParti
             """, nativeQuery = true)
     long countConflictsExcludingMeeting(
             @Param("meetingId") UUID meetingId,
-            @Param("users") Collection<Long> userIds,
+            @Param("userIds") Collection<UUID> userIds,
             @Param("startAt") OffsetDateTime startAt,
             @Param("endAt") OffsetDateTime endAt
     );

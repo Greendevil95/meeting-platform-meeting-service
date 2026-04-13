@@ -7,13 +7,13 @@ public record MeetingCreatedEvent(
         UUID eventId,
         OffsetDateTime occurredAt,
         UUID meetingId,
-        Long organizerId,
+        UUID organizerId,
         String title,
         OffsetDateTime startAt,
         OffsetDateTime endAt
 ) implements MeetingEvent {
     @Override
-    public MeetingEventType getEventType() {
-        return MeetingEventType.MEETING_CREATED;
+    public EventType getEventType() {
+        return EventType.MEETING_CREATED;
     }
 }

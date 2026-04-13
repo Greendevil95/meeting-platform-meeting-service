@@ -21,5 +21,5 @@ public class MeetingParticipantId implements Serializable {
     private UUID meetingId;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private UUID userId;
 }

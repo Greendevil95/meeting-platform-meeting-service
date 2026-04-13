@@ -2,7 +2,7 @@ package com.example.meetingservice.service;
 
 import com.example.meetingservice.api.dto.*;
 import com.example.meetingservice.config.CacheConfig;
-import com.example.meetingservice.domain.MeetingStatus;
+import com.example.meetingservice.entity.MeetingStatus;
 import com.example.meetingservice.entity.MeetingEntity;
 import com.example.meetingservice.entity.MeetingParticipantEntity;
 import com.example.meetingservice.entity.MeetingParticipantId;
@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.example.meetingservice.domain.ParticipantRole.ATTENDEE;
-import static com.example.meetingservice.domain.ParticipantRole.ORGANIZER;
+import static com.example.meetingservice.entity.ParticipantRole.ATTENDEE;
+import static com.example.meetingservice.entity.ParticipantRole.ORGANIZER;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -87,7 +87,7 @@ public class MeetingService {
         meetingValidationService.validateTimeRange(request.startAt(), request.endAt());
 
         var participants = participantRepository.findAllByIdMeetingId(meetingId);
-        Set<Long> userIds = participants.stream()
+        Set<UUID> userIds = participants.stream()
                 .map(p -> p.getId().getUserId())
                 .collect(Collectors.toSet());
         meetingValidationService.ensureNoScheduleConflicts(userIds, request.startAt(), request.endAt(), meetingId);
@@ -167,7 +167,7 @@ public class MeetingService {
     }
 
     @Transactional
-    public MeetingResponse removeParticipant(UUID meetingId, Long userId, Long requestorId) {
+    public MeetingResponse removeParticipant(UUID meetingId, UUID userId, UUID requestorId) {
         MeetingEntity meeting = meetingQueryService.loadActiveMeeting(meetingId);
         meetingValidationService.assertOrganizer(meeting, requestorId);
         if (meeting.getOrganizerId().equals(userId)) {

@@ -1,4 +1,4 @@
-package com.example.meetingservice.api;
+package com.example.meetingservice.api.controller;
 
 import com.example.meetingservice.api.dto.AddParticipantRequest;
 import com.example.meetingservice.api.dto.CancelMeetingRequest;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/meetings")
+@RequestMapping("/api/meetings")
 public class MeetingController {
 
     private final MeetingService meetingService;
@@ -54,15 +54,15 @@ public class MeetingController {
     @DeleteMapping("/{id}/participants/{userId}")
     public MeetingResponse removeParticipant(
             @PathVariable UUID id,
-            @PathVariable Long userId,
-            @RequestParam("requestorId") @NotNull Long requestorId
+            @PathVariable UUID userId,
+            @RequestParam("requestorId") @NotNull UUID requestorId
     ) {
         return meetingService.removeParticipant(id, userId, requestorId);
     }
 
     @GetMapping
     public List<MeetingSummaryResponse> list(
-            @RequestParam("userId") @NotNull Long userId,
+            @RequestParam("userId") @NotNull UUID userId,
             @RequestParam("from") @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @RequestParam("to") @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to
     ) {

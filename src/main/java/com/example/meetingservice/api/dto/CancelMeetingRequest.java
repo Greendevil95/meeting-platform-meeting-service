@@ -2,5 +2,7 @@ package com.example.meetingservice.api.dto;
 
 import jakarta.validation.constraints.NotNull;
 
-public record CancelMeetingRequest(@NotNull Long requestorId) {
+import java.util.UUID;
+
+public record CancelMeetingRequest(@NotNull UUID requestorId) {
 }

@@ -1,6 +1,5 @@
 package com.example.meetingservice.entity;
 
-import com.example.meetingservice.domain.MeetingStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +21,7 @@ public class MeetingEntity {
     private UUID id;
 
     @Column(name = "organizer_id", nullable = false)
-    private Long organizerId;
+    private UUID organizerId;
 
     @Column(name = "title", nullable = false)
     private String title;

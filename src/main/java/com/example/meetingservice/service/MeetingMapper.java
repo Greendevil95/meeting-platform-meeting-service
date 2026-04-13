@@ -1,8 +1,8 @@
 package com.example.meetingservice.service;
 
 import com.example.meetingservice.api.dto.*;
-import com.example.meetingservice.domain.ParticipantRole;
-import com.example.meetingservice.domain.ResponseStatus;
+import com.example.meetingservice.entity.ParticipantRole;
+import com.example.meetingservice.entity.ResponseStatus;
 import com.example.meetingservice.entity.MeetingEntity;
 import com.example.meetingservice.entity.MeetingParticipantEntity;
 import com.example.meetingservice.entity.MeetingParticipantId;
@@ -18,6 +18,7 @@ public interface MeetingMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "status", constant = "SCHEDULED")
+    @Mapping(target = "organizerId", source = "organizerUserId")
     MeetingEntity toEntity(CreateMeetingRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -40,7 +41,7 @@ public interface MeetingMapper {
     }
 
     default MeetingParticipantEntity toParticipantEntity(UUID meetingId,
-                                                         Long userId,
+                                                         UUID userId,
                                                          ParticipantRole role) {
         var meetingParticipant = new MeetingParticipantEntity();
         meetingParticipant.setRole(role);
@@ -61,7 +62,7 @@ public interface MeetingMapper {
     default List<MeetingParticipantEntity> toParticipantEntities(
             UUID meetingId,
             ParticipantRole role,
-            List<Long> userIds
+            List<UUID> userIds
     ) {
         return userIds.stream()
                 .map(userId -> toParticipantEntity(meetingId, userId, role))

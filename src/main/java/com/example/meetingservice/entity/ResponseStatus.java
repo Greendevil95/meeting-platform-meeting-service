@@ -1,4 +1,4 @@
-package com.example.meetingservice.domain;
+package com.example.meetingservice.entity;
 
 public enum ResponseStatus {
     PENDING,

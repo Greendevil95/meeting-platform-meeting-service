@@ -1,13 +1,16 @@
 package com.example.meetingservice.entity;
 
-import com.example.meetingservice.kafka.meeting.MeetingEventType;
+import com.example.meetingservice.kafka.meeting.EventType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -31,10 +34,11 @@ public class OutboxEventEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false)
-    private MeetingEventType eventType;
+    private EventType eventType;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "event_json", nullable = false, columnDefinition = "jsonb")
-    private String eventJson;
+    private Map<String, Object> eventJson;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

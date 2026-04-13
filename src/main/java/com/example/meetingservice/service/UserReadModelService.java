@@ -1,7 +1,7 @@
 package com.example.meetingservice.service;
 
-import com.example.meetingservice.domain.UserRole;
-import com.example.meetingservice.domain.UserStatus;
+import com.example.meetingservice.entity.UserRole;
+import com.example.meetingservice.entity.UserStatus;
 import com.example.meetingservice.entity.UserReadModelEntity;
 import com.example.meetingservice.repository.UserReadModelRepository;
 import org.springframework.stereotype.Service;
@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserReadModelService {
@@ -32,7 +33,7 @@ public class UserReadModelService {
     }
 
     @Transactional
-    public void updateStatus(Long userId, UserStatus status, OffsetDateTime eventTime) {
+    public void updateStatus(UUID userId, UserStatus status, OffsetDateTime eventTime) {
         UserReadModelEntity entity = repository.findById(userId).orElseGet(() -> {
             UserReadModelEntity created = new UserReadModelEntity();
             created.setUserId(userId);
@@ -53,7 +54,7 @@ public class UserReadModelService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserProfile> findUser(Long userId) {
+    public Optional<UserProfile> findUser(UUID userId) {
         return repository.findById(userId).map(userReadModelMapper::toProfile);
     }
 

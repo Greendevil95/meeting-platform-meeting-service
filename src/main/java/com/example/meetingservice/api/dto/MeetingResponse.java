@@ -1,13 +1,13 @@
 package com.example.meetingservice.api.dto;
 
-import com.example.meetingservice.domain.MeetingStatus;
+import com.example.meetingservice.entity.MeetingStatus;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public record MeetingResponse(
         UUID id,
-        Long organizerId,
+        UUID organizerId,
         String title,
         String description,
         OffsetDateTime startAt,

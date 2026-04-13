@@ -12,7 +12,7 @@ public record MeetingUpdatedEvent(
         OffsetDateTime endAt
 ) implements MeetingEvent {
     @Override
-    public MeetingEventType getEventType() {
-        return MeetingEventType.MEETING_UPDATED;
+    public EventType getEventType() {
+        return EventType.MEETING_UPDATED;
     }
 }

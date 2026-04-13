@@ -2,8 +2,10 @@ package com.example.meetingservice.api.dto;
 
 import jakarta.validation.constraints.NotNull;
 
+import java.util.UUID;
+
 public record AddParticipantRequest(
-        @NotNull Long requestorId,
+        @NotNull UUID requestorId,
         @NotNull MeetingParticipantRequest participant
 ) {
 }
