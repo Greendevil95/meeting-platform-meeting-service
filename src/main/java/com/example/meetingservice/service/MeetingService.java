@@ -71,6 +71,7 @@ public class MeetingService {
                         meeting.getId(),
                         meeting.getOrganizerId(),
                         meeting.getTitle(),
+                        meeting.getDescription(),
                         meeting.getStartAt(),
                         meeting.getEndAt()
                 )
@@ -103,6 +104,7 @@ public class MeetingService {
                         OffsetDateTime.now(),
                         meeting.getId(),
                         meeting.getTitle(),
+                        meeting.getDescription(),
                         meeting.getStartAt(),
                         meeting.getEndAt()
                 )

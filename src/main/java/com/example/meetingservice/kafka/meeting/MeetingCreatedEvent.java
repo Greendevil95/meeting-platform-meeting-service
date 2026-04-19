@@ -9,6 +9,7 @@ public record MeetingCreatedEvent(
         UUID meetingId,
         UUID organizerId,
         String title,
+        String description,
         OffsetDateTime startAt,
         OffsetDateTime endAt
 ) implements MeetingEvent {

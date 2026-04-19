@@ -8,6 +8,7 @@ public record MeetingUpdatedEvent(
         OffsetDateTime occurredAt,
         UUID meetingId,
         String title,
+        String description,
         OffsetDateTime startAt,
         OffsetDateTime endAt
 ) implements MeetingEvent {
