@@ -76,6 +76,18 @@ public class MeetingService {
                         meeting.getEndAt()
                 )
         );
+        participantEntities.stream()
+                .filter(participant -> participant.getRole() == ATTENDEE)
+                .forEach(participant -> outboxService.enqueueEvent(
+                        "MEETING",
+                        meeting.getId().toString(),
+                        new MeetingParticipantAddedEvent(
+                                UUID.randomUUID(),
+                                OffsetDateTime.now(),
+                                meeting.getId(),
+                                participant.getId().getUserId()
+                        )
+                ));
         return meetingMapper.toResponse(meeting, participantEntities);
     }
 
