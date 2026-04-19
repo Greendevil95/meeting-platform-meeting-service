@@ -115,6 +115,8 @@ public class MeetingService {
                         UUID.randomUUID(),
                         OffsetDateTime.now(),
                         meeting.getId(),
+                        meeting.getOrganizerId(),
+                        userIds,
                         meeting.getTitle(),
                         meeting.getDescription(),
                         meeting.getStartAt(),
