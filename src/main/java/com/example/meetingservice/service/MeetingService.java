@@ -101,6 +101,7 @@ public class MeetingService {
 
         var participants = participantRepository.findAllByIdMeetingId(meetingId);
         Set<UUID> userIds = participants.stream()
+                .filter(p -> p.getRole() == ATTENDEE)
                 .map(p -> p.getId().getUserId())
                 .collect(Collectors.toSet());
         meetingValidationService.ensureNoScheduleConflicts(userIds, request.startAt(), request.endAt(), meetingId);
