@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.example.meetingservice.entity.ParticipantRole.ATTENDEE;
 import static com.example.meetingservice.entity.ParticipantRole.ORGANIZER;
+import static com.example.meetingservice.entity.ResponseStatus.DECLINED;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -102,6 +103,7 @@ public class MeetingService {
         var participants = participantRepository.findAllByIdMeetingId(meetingId);
         Set<UUID> userIds = participants.stream()
                 .filter(p -> p.getRole() == ATTENDEE)
+                .filter(p -> p.getResponseStatus() != DECLINED)
                 .map(p -> p.getId().getUserId())
                 .collect(Collectors.toSet());
         meetingValidationService.ensureNoScheduleConflicts(userIds, request.startAt(), request.endAt(), meetingId);
