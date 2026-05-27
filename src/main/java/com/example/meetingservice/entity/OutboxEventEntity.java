@@ -47,6 +47,12 @@ public class OutboxEventEntity {
     @Column(name = "retry_count", nullable = false)
     private int retryCount;
 
+    @Column(name = "processing_started_at")
+    private OffsetDateTime processingStartedAt;
+
+    @Column(name = "processing_token")
+    private UUID processingToken;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

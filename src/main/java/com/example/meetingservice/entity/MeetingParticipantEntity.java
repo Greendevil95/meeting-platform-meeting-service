@@ -16,6 +16,11 @@ public class MeetingParticipantEntity {
     @EmbeddedId
     private MeetingParticipantId id;
 
+    @MapsId("meetingId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "meeting_id", nullable = false)
+    private MeetingEntity meeting;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private ParticipantRole role;

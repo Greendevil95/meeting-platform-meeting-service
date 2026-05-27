@@ -52,14 +52,14 @@ public class MeetingService {
         meetingValidationService.ensureNoScheduleConflicts(request.participantUserIds(), request.startAt(), request.endAt(), null);
 
         MeetingEntity meeting = meetingMapper.toEntity(request);
-        meetingRepository.save(meeting);
+        meetingRepository.saveAndFlush(meeting);
 
         var participantEntities = new ArrayList<MeetingParticipantEntity>();
         participantEntities.add(
-                meetingMapper.toParticipantEntity(meeting.getId(), new MeetingParticipantRequest(request.organizerUserId(), ORGANIZER))
+                meetingMapper.toParticipantEntity(meeting, new MeetingParticipantRequest(request.organizerUserId(), ORGANIZER))
         );
         participantEntities.addAll(
-                meetingMapper.toParticipantEntities(meeting.getId(), ATTENDEE, request.participantUserIds())
+                meetingMapper.toParticipantEntities(meeting, ATTENDEE, request.participantUserIds())
         );
         participantRepository.saveAll(participantEntities);
 
@@ -69,6 +69,7 @@ public class MeetingService {
                 new MeetingCreatedEvent(
                         UUID.randomUUID(),
                         OffsetDateTime.now(),
+                        meeting.getVersion(),
                         meeting.getId(),
                         meeting.getOrganizerId(),
                         meeting.getTitle(),
@@ -85,6 +86,7 @@ public class MeetingService {
                         new MeetingParticipantAddedEvent(
                                 UUID.randomUUID(),
                                 OffsetDateTime.now(),
+                                meeting.getVersion(),
                                 meeting.getId(),
                                 participant.getId().getUserId()
                         )
@@ -109,7 +111,7 @@ public class MeetingService {
         meetingValidationService.ensureNoScheduleConflicts(userIds, request.startAt(), request.endAt(), meetingId);
 
         meetingMapper.updateEntity(request, meeting);
-        meetingRepository.save(meeting);
+        meetingRepository.saveAndFlush(meeting);
 
         outboxService.enqueueEvent(
                 "MEETING",
@@ -117,6 +119,7 @@ public class MeetingService {
                 new MeetingUpdatedEvent(
                         UUID.randomUUID(),
                         OffsetDateTime.now(),
+                        meeting.getVersion(),
                         meeting.getId(),
                         meeting.getOrganizerId(),
                         userIds,
@@ -135,7 +138,7 @@ public class MeetingService {
         var meeting = meetingQueryService.loadActiveMeeting(meetingId);
         meetingValidationService.assertOrganizer(meeting, request.requestorId());
         meeting.setStatus(MeetingStatus.CANCELLED);
-        meetingRepository.save(meeting);
+        meetingRepository.saveAndFlush(meeting);
 
         outboxService.enqueueEvent(
                 "MEETING",
@@ -143,6 +146,7 @@ public class MeetingService {
                 new MeetingCancelledEvent(
                         UUID.randomUUID(),
                         OffsetDateTime.now(),
+                        meeting.getVersion(),
                         meeting.getId(),
                         request.requestorId()
                 )
@@ -167,17 +171,15 @@ public class MeetingService {
                 meeting.getEndAt(),
                 meetingId
         );
-        var participantEntity = meetingMapper.toParticipantEntity(
-                meeting.getId(),
-                request.participant()
-        );
-        participantRepository.save(participantEntity);
+        meeting.addParticipant(userId, request.participant().role());
+        meetingRepository.saveAndFlush(meeting);
         outboxService.enqueueEvent(
                 "MEETING",
                 meeting.getId().toString(),
                 new MeetingParticipantAddedEvent(
                         UUID.randomUUID(),
                         OffsetDateTime.now(),
+                        meeting.getVersion(),
                         meeting.getId(),
                         userId
                 )
@@ -199,7 +201,9 @@ public class MeetingService {
         if (!participantRepository.existsById(participantId)) {
             throw new NotFoundException("Participant not found");
         }
-        participantRepository.deleteById(participantId);
+        meeting.removeParticipant(userId);
+        meetingRepository.save(meeting);
+        meetingRepository.flush();
 
         outboxService.enqueueEvent(
                 "MEETING",
@@ -207,6 +211,7 @@ public class MeetingService {
                 new MeetingParticipantRemovedEvent(
                         UUID.randomUUID(),
                         OffsetDateTime.now(),
+                        meeting.getVersion(),
                         meeting.getId(),
                         userId
                 )

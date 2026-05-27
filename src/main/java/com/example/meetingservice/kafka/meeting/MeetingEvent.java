@@ -5,4 +5,5 @@ import java.util.UUID;
 public interface MeetingEvent {
     EventType getEventType();
     UUID eventId();
+    Long version();
 }

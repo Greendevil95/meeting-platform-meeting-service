@@ -2,47 +2,36 @@ package com.example.meetingservice.service;
 
 import com.example.meetingservice.config.KafkaTopicsProperties;
 import com.example.meetingservice.entity.OutboxEventEntity;
-import com.example.meetingservice.entity.OutboxStatus;
-import com.example.meetingservice.kafka.meeting.*;
-import com.example.meetingservice.repository.OutboxEventRepository;
+import com.example.meetingservice.kafka.meeting.EventType;
+import com.example.meetingservice.kafka.meeting.MeetingEvent;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
+@Log4j2
 @RequiredArgsConstructor
 @Component
 public class OutboxPublisher {
-
-    private static final Logger log = LoggerFactory.getLogger(OutboxPublisher.class);
-
-    private final OutboxEventRepository outboxEventRepository;
+    private final OutboxProcessingService outboxProcessingService;
     private final KafkaTopicsProperties topicsProperties;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final JsonMapper jsonMapper;
 
-    @Transactional
     @Scheduled(fixedDelayString = "PT3S")
     public void publishPending() {
-        List<OutboxEventEntity> pending = outboxEventRepository.findTop100ByStatusOrderByCreatedAtAsc(OutboxStatus.PENDING);
+        List<OutboxEventEntity> pending = outboxProcessingService.claimPendingBatch();
         for (OutboxEventEntity event : pending) {
             try {
                 MeetingEvent kafkaEvent = jsonMapper.convertValue(event.getEventJson(), event.getEventType().eventClass());
                 kafkaTemplate.send(resolveTopic(event.getEventType()), event.getAggregateId(), kafkaEvent).get();
-                event.setStatus(OutboxStatus.PUBLISHED);
-                event.setPublishedAt(OffsetDateTime.now());
-                outboxEventRepository.save(event);
+                outboxProcessingService.markPublished(event.getId(), event.getProcessingToken());
             } catch (Exception ex) {
-                event.setStatus(OutboxStatus.FAILED);
-                event.setRetryCount(event.getRetryCount() + 1);
-                outboxEventRepository.save(event);
+                outboxProcessingService.markFailed(event.getId(), event.getProcessingToken());
                 log.error("Cannot publish outbox event {}", event.getId(), ex);
             }
         }

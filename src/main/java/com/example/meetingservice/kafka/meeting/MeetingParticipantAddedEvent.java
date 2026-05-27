@@ -6,6 +6,7 @@ import java.util.UUID;
 public record MeetingParticipantAddedEvent(
         UUID eventId,
         OffsetDateTime occurredAt,
+        Long version,
         UUID meetingId,
         UUID userId
 ) implements MeetingEvent {

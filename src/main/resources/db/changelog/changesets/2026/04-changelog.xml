@@ -159,4 +159,26 @@
                              constraintName="uk_outbox_events_event_id"/>
     </changeSet>
 
+    <changeSet id="2026-04-20-add-meeting-version" author="Denis Bondarev">
+        <addColumn tableName="meetings">
+            <column name="version" type="bigint" defaultValueNumeric="0"/>
+        </addColumn>
+
+        <update tableName="meetings">
+            <column name="version" valueNumeric="0"/>
+            <where>version IS NULL</where>
+        </update>
+
+        <addNotNullConstraint tableName="meetings"
+                              columnName="version"
+                              columnDataType="bigint"/>
+    </changeSet>
+
+    <changeSet id="2026-04-21-add-outbox-processing-started-at" author="Denis Bondarev">
+        <addColumn tableName="outbox_events">
+            <column name="processing_started_at" type="timestamp with time zone"/>
+            <column name="processing_token" type="uuid"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

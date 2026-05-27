@@ -7,6 +7,7 @@ import java.util.UUID;
 public record MeetingUpdatedEvent(
         UUID eventId,
         OffsetDateTime occurredAt,
+        Long version,
         UUID meetingId,
         UUID organizerId,
         Set<UUID> participantUserIds,

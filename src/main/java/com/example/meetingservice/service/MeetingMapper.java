@@ -31,41 +31,43 @@ public interface MeetingMapper {
     @Mapping(target = "userId", source = "id.userId")
     MeetingParticipantRequest toParticipantDto(MeetingParticipantEntity participant);
 
-    default MeetingParticipantEntity toParticipantEntity(UUID meetingId,
+    default MeetingParticipantEntity toParticipantEntity(MeetingEntity meeting,
                                                          MeetingParticipantRequest dto) {
         var meetingParticipant = new MeetingParticipantEntity();
         meetingParticipant.setRole(dto.role());
-        meetingParticipant.setId(new MeetingParticipantId(meetingId, dto.userId()));
+        meetingParticipant.setId(new MeetingParticipantId(meeting.getId(), dto.userId()));
+        meetingParticipant.setMeeting(meeting);
         meetingParticipant.setResponseStatus(ResponseStatus.PENDING);
         return meetingParticipant;
     }
 
-    default MeetingParticipantEntity toParticipantEntity(UUID meetingId,
+    default MeetingParticipantEntity toParticipantEntity(MeetingEntity meeting,
                                                          UUID userId,
                                                          ParticipantRole role) {
         var meetingParticipant = new MeetingParticipantEntity();
         meetingParticipant.setRole(role);
-        meetingParticipant.setId(new MeetingParticipantId(meetingId, userId));
+        meetingParticipant.setId(new MeetingParticipantId(meeting.getId(), userId));
+        meetingParticipant.setMeeting(meeting);
         meetingParticipant.setResponseStatus(ResponseStatus.PENDING);
         return meetingParticipant;
     }
 
     default List<MeetingParticipantEntity> toParticipantEntities(
-            UUID meetingId,
+            MeetingEntity meeting,
             List<MeetingParticipantRequest> users
     ) {
         return users.stream()
-                .map(user -> toParticipantEntity(meetingId, user))
+                .map(user -> toParticipantEntity(meeting, user))
                 .toList();
     }
 
     default List<MeetingParticipantEntity> toParticipantEntities(
-            UUID meetingId,
+            MeetingEntity meeting,
             ParticipantRole role,
             List<UUID> userIds
     ) {
         return userIds.stream()
-                .map(userId -> toParticipantEntity(meetingId, userId, role))
+                .map(userId -> toParticipantEntity(meeting, userId, role))
                 .toList();
     }
 
