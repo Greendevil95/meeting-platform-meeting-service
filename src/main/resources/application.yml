@@ -54,6 +54,11 @@ meeting:
   redis:
     meeting-ttl: 30m
   kafka:
+    retry:
+      max-retries: 3
+      initial-interval: 1s
+      multiplier: 2.0
+      max-interval: 10s
     prefixes:
       user-service-prefix: user-service
       meeting-service-prefix: meeting-service

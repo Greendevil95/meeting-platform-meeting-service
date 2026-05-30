@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
 
 @RequiredArgsConstructor
@@ -67,6 +68,9 @@ public class UserEventsConsumer {
     private void consume(String topic, String payload, ThrowingRunnable action) {
         try {
             action.run();
+        } catch (JacksonException | IllegalArgumentException ex) {
+            log.error("Failed to process non-retryable {} event: {}", topic, payload, ex);
+            throw ex;
         } catch (Exception ex) {
             log.error("Failed to process {} event: {}", topic, payload, ex);
             throw new IllegalStateException("Cannot process user event", ex);
