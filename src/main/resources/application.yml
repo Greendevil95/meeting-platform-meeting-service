@@ -50,6 +50,18 @@ logging:
     org.hibernate.SQL: WARN
     org.hibernate.orm.jdbc.bind: OFF
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 meeting:
   redis:
     meeting-ttl: 30m
