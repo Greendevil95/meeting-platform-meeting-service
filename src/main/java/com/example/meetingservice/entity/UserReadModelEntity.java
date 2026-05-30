@@ -33,4 +33,7 @@ public class UserReadModelEntity {
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    @Column(name = "version", nullable = false)
+    private long version;
 }

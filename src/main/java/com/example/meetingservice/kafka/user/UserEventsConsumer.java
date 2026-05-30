@@ -29,6 +29,7 @@ public class UserEventsConsumer {
                     event.email(),
                     event.status(),
                     event.role(),
+                    event.version(),
                     event.timestamp()
             ));
         });
@@ -44,6 +45,7 @@ public class UserEventsConsumer {
                     event.email(),
                     event.status(),
                     event.role(),
+                    event.version(),
                     event.timestamp()
             ));
         });
@@ -53,7 +55,7 @@ public class UserEventsConsumer {
     public void onUserDeleted(String payload) {
         consume(kafkaTopicsProperties.getUserDeleted(), payload, () -> {
             UserDeletedEvent event = jsonMapper.readValue(payload, UserDeletedEvent.class);
-            userReadModelService.updateStatus(event.userId(), UserStatus.DELETED, event.timestamp());
+            userReadModelService.updateStatus(event.userId(), UserStatus.DELETED, event.version(), event.timestamp());
         });
     }
 
@@ -61,7 +63,7 @@ public class UserEventsConsumer {
     public void onUserStatusChanged(String payload) {
         consume(kafkaTopicsProperties.getUserStatusChanged(), payload, () -> {
             UserStatusChangedEvent event = jsonMapper.readValue(payload, UserStatusChangedEvent.class);
-            userReadModelService.updateStatus(event.userId(), event.status(), event.timestamp());
+            userReadModelService.updateStatus(event.userId(), event.status(), event.version(), event.timestamp());
         });
     }
 

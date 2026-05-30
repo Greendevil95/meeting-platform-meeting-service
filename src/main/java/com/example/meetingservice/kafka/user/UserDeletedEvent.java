@@ -6,6 +6,7 @@ import java.util.UUID;
 public record UserDeletedEvent(
         UUID eventId,
         UUID userId,
+        long version,
         OffsetDateTime timestamp
 ) {
 }

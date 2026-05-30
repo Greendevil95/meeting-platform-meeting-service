@@ -11,6 +11,7 @@ public record UserProfile(
         String email,
         UserStatus status,
         UserRole role,
+        long version,
         OffsetDateTime updatedAt
 ) {
 }

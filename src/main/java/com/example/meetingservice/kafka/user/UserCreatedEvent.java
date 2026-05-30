@@ -12,6 +12,7 @@ public record UserCreatedEvent(
         String email,
         UserStatus status,
         UserRole role,
+        long version,
         OffsetDateTime timestamp
 ) {
 }

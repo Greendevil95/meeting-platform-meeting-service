@@ -9,6 +9,7 @@ public record UserStatusChangedEvent(
         UUID userId,
         UserStatus previousStatus,
         UserStatus status,
+        long version,
         OffsetDateTime timestamp
 ) {
 }

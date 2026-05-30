@@ -33,7 +33,7 @@ public class UserReadModelService {
     }
 
     @Transactional
-    public void updateStatus(UUID userId, UserStatus status, OffsetDateTime eventTime) {
+    public void updateStatus(UUID userId, UserStatus status, long version, OffsetDateTime eventTime) {
         UserReadModelEntity entity = repository.findById(userId).orElseGet(() -> {
             UserReadModelEntity created = new UserReadModelEntity();
             created.setUserId(userId);
@@ -41,13 +41,15 @@ public class UserReadModelService {
             created.setEmail("unknown");
             created.setRole(UserRole.USER);
             created.setStatus(status);
+            created.setVersion(version);
             created.setUpdatedAt(eventTime);
             return created;
         });
-        if (entity.getUpdatedAt() != null && !eventTime.isAfter(entity.getUpdatedAt())) {
+        if (version <= entity.getVersion()) {
             return;
         }
         entity.setStatus(status);
+        entity.setVersion(version);
         entity.setUpdatedAt(eventTime);
         repository.save(entity);
         userReadModelMapper.toProfile(entity);
@@ -64,7 +66,7 @@ public class UserReadModelService {
     }
 
     private void applyIfNewer(UserReadModelEntity existing, UserProfile profile) {
-        if (existing.getUpdatedAt() != null && !profile.updatedAt().isAfter(existing.getUpdatedAt())) {
+        if (profile.version() <= existing.getVersion()) {
             return;
         }
         userReadModelMapper.updateEntity(profile, existing);

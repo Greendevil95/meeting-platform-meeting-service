@@ -181,4 +181,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="2026-04-22-add-user-read-model-version" author="Denis Bondarev">
+        <addColumn tableName="user_read_model">
+            <column name="version" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
