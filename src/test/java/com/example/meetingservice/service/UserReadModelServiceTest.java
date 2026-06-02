@@ -3,6 +3,7 @@ package com.example.meetingservice.service;
 import com.example.meetingservice.entity.UserReadModelEntity;
 import com.example.meetingservice.entity.UserRole;
 import com.example.meetingservice.entity.UserStatus;
+import com.example.meetingservice.metrics.MeetingMetrics;
 import com.example.meetingservice.repository.UserReadModelRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,11 +29,14 @@ class UserReadModelServiceTest {
     @Mock
     private UserReadModelMapper userReadModelMapper;
 
+    @Mock
+    private MeetingMetrics meetingMetrics;
+
     private UserReadModelService service;
 
     @BeforeEach
     void setUp() {
-        service = new UserReadModelService(repository, userReadModelMapper);
+        service = new UserReadModelService(repository, userReadModelMapper, meetingMetrics);
     }
 
     @Test
@@ -52,6 +57,7 @@ class UserReadModelServiceTest {
 
         service.upsertUser(staleProfile);
 
+        verify(meetingMetrics).recordKafkaEventSkipped("user", "stale_version");
         verify(userReadModelMapper, never()).updateEntity(staleProfile, existing);
         verify(repository, never()).save(existing);
     }
@@ -65,7 +71,20 @@ class UserReadModelServiceTest {
 
         service.updateStatus(userId, UserStatus.DELETED, 7L, OffsetDateTime.now().plusDays(1));
 
+        verify(meetingMetrics).recordKafkaEventSkipped("user", "stale_version");
         verify(repository, never()).save(existing);
+    }
+
+    @Test
+    void updateStatusCreatesPlaceholderForUnknownUser() {
+        UUID userId = UUID.randomUUID();
+        OffsetDateTime eventTime = OffsetDateTime.now();
+        when(repository.findById(userId)).thenReturn(Optional.empty());
+
+        service.updateStatus(userId, UserStatus.DELETED, 1L, eventTime);
+
+        verify(repository).save(any(UserReadModelEntity.class));
+        verify(meetingMetrics, never()).recordKafkaEventSkipped("user", "stale_version");
     }
 
     private UserReadModelEntity existingUser(UUID userId, long version) {

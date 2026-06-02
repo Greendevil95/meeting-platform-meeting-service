@@ -14,6 +14,7 @@ import com.example.meetingservice.kafka.meeting.MeetingCreatedEvent;
 import com.example.meetingservice.kafka.meeting.MeetingParticipantAddedEvent;
 import com.example.meetingservice.kafka.meeting.MeetingParticipantRemovedEvent;
 import com.example.meetingservice.kafka.meeting.MeetingUpdatedEvent;
+import com.example.meetingservice.metrics.MeetingMetrics;
 import com.example.meetingservice.repository.MeetingParticipantRepository;
 import com.example.meetingservice.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class MeetingService {
     private final MeetingValidationService meetingValidationService;
     private final OutboxService outboxService;
     private final MeetingMapper meetingMapper;
+    private final MeetingMetrics meetingMetrics;
 
     @Transactional
     public MeetingResponse create(CreateMeetingRequest request) {
@@ -91,6 +93,10 @@ public class MeetingService {
                                 participant.getId().getUserId()
                         )
                 ));
+        meetingMetrics.recordMeetingCreated();
+        meetingMetrics.recordParticipantsAdded((int) participantEntities.stream()
+                .filter(participant -> participant.getRole() == ATTENDEE)
+                .count());
         return meetingMapper.toResponse(meeting, participantEntities);
     }
 
@@ -129,6 +135,7 @@ public class MeetingService {
                         meeting.getEndAt()
                 )
         );
+        meetingMetrics.recordMeetingUpdated();
         return meetingMapper.toResponse(meeting, participants);
     }
 
@@ -151,6 +158,7 @@ public class MeetingService {
                         request.requestorId()
                 )
         );
+        meetingMetrics.recordMeetingCancelled();
     }
 
     @Transactional
@@ -184,6 +192,7 @@ public class MeetingService {
                         userId
                 )
         );
+        meetingMetrics.recordParticipantsAdded(1);
         return meetingQueryService.getById(meetingId);
     }
 
@@ -216,6 +225,7 @@ public class MeetingService {
                         userId
                 )
         );
+        meetingMetrics.recordParticipantRemoved();
         return meetingQueryService.getById(meetingId);
     }
 }

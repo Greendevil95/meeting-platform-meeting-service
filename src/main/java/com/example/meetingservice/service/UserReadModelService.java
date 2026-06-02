@@ -3,6 +3,7 @@ package com.example.meetingservice.service;
 import com.example.meetingservice.entity.UserRole;
 import com.example.meetingservice.entity.UserStatus;
 import com.example.meetingservice.entity.UserReadModelEntity;
+import com.example.meetingservice.metrics.MeetingMetrics;
 import com.example.meetingservice.repository.UserReadModelRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +17,16 @@ public class UserReadModelService {
 
     private final UserReadModelRepository repository;
     private final UserReadModelMapper userReadModelMapper;
+    private final MeetingMetrics meetingMetrics;
 
     public UserReadModelService(
             UserReadModelRepository repository,
-            UserReadModelMapper userReadModelMapper
+            UserReadModelMapper userReadModelMapper,
+            MeetingMetrics meetingMetrics
     ) {
         this.repository = repository;
         this.userReadModelMapper = userReadModelMapper;
+        this.meetingMetrics = meetingMetrics;
     }
 
     @Transactional
@@ -34,7 +38,8 @@ public class UserReadModelService {
 
     @Transactional
     public void updateStatus(UUID userId, UserStatus status, long version, OffsetDateTime eventTime) {
-        UserReadModelEntity entity = repository.findById(userId).orElseGet(() -> {
+        UserReadModelEntity entity = repository.findById(userId).orElse(null);
+        if (entity == null) {
             UserReadModelEntity created = new UserReadModelEntity();
             created.setUserId(userId);
             created.setUsername("unknown");
@@ -43,9 +48,11 @@ public class UserReadModelService {
             created.setStatus(status);
             created.setVersion(version);
             created.setUpdatedAt(eventTime);
-            return created;
-        });
+            repository.save(created);
+            return;
+        }
         if (version <= entity.getVersion()) {
+            meetingMetrics.recordKafkaEventSkipped("user", "stale_version");
             return;
         }
         entity.setStatus(status);
@@ -67,6 +74,7 @@ public class UserReadModelService {
 
     private void applyIfNewer(UserReadModelEntity existing, UserProfile profile) {
         if (profile.version() <= existing.getVersion()) {
+            meetingMetrics.recordKafkaEventSkipped("user", "stale_version");
             return;
         }
         userReadModelMapper.updateEntity(profile, existing);

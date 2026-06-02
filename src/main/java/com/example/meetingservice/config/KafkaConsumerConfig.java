@@ -1,5 +1,6 @@
 package com.example.meetingservice.config;
 
+import com.example.meetingservice.metrics.MeetingMetrics;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,9 +25,10 @@ public class KafkaConsumerConfig {
 
     @Bean
     public MeetingDltDestinationResolver meetingDltDestinationResolver(
-            @Value("${spring.kafka.consumer.group-id}") String consumerGroupId
+            @Value("${spring.kafka.consumer.group-id}") String consumerGroupId,
+            MeetingMetrics meetingMetrics
     ) {
-        return new MeetingDltDestinationResolver(consumerGroupId);
+        return new MeetingDltDestinationResolver(consumerGroupId, meetingMetrics);
     }
 
     @Bean
