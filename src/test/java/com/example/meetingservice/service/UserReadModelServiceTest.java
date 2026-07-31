@@ -45,6 +45,7 @@ class UserReadModelServiceTest {
         UserReadModelEntity existing = existingUser(userId, 5L);
         UserProfile staleProfile = new UserProfile(
                 userId,
+                "keycloak-alice",
                 "alice-stale",
                 "stale@test.local",
                 UserStatus.ACTIVE,
@@ -90,6 +91,7 @@ class UserReadModelServiceTest {
     private UserReadModelEntity existingUser(UUID userId, long version) {
         UserReadModelEntity entity = new UserReadModelEntity();
         entity.setUserId(userId);
+        entity.setKeycloakSubject("keycloak-alice");
         entity.setUsername("alice");
         entity.setEmail("alice@test.local");
         entity.setStatus(UserStatus.ACTIVE);

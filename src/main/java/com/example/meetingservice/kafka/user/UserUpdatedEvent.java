@@ -8,6 +8,7 @@ import java.util.UUID;
 public record UserUpdatedEvent(
         UUID eventId,
         UUID userId,
+        String keycloakSubject,
         String username,
         String email,
         UserStatus status,

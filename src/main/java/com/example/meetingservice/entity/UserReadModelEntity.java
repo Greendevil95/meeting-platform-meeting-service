@@ -17,6 +17,9 @@ public class UserReadModelEntity {
     @Column(name = "user_id")
     private UUID userId;
 
+    @Column(name = "keycloak_subject", unique = true, length = 64)
+    private String keycloakSubject;
+
     @Column(name = "username", nullable = false)
     private String username;
 

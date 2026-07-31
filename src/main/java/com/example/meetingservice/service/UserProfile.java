@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public record UserProfile(
         UUID userId,
+        String keycloakSubject,
         String username,
         String email,
         UserStatus status,

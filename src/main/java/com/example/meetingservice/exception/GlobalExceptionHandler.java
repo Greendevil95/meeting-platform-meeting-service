@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
         ApiError error = error(ex.getCode(), ex.getMessage());
         log.error("ApiServiceException: code={}, message={}", ex.getCode(), ex.getMessage(), ex);
         return ResponseEntity.status(ex.getHttpStatus()).body(error);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(403).body(error("error.access.denied", "Access denied"));
     }
 
     @ExceptionHandler(Exception.class)

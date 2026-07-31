@@ -25,6 +25,7 @@ public class UserEventsConsumer {
             UserCreatedEvent event = jsonMapper.readValue(payload, UserCreatedEvent.class);
             userReadModelService.upsertUser(new UserProfile(
                     event.userId(),
+                    event.keycloakSubject(),
                     event.username(),
                     event.email(),
                     event.status(),
@@ -41,6 +42,7 @@ public class UserEventsConsumer {
             UserUpdatedEvent event = jsonMapper.readValue(payload, UserUpdatedEvent.class);
             userReadModelService.upsertUser(new UserProfile(
                     event.userId(),
+                    event.keycloakSubject(),
                     event.username(),
                     event.email(),
                     event.status(),
