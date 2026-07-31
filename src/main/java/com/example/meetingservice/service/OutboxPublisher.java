@@ -31,7 +31,9 @@ public class OutboxPublisher {
             try {
                 MeetingEvent kafkaEvent = jsonMapper.convertValue(event.getEventJson(), event.getEventType().eventClass());
                 String topic = resolveTopic(event.getEventType());
-                kafkaTemplate.send(topic, event.getAggregateId(), kafkaEvent).get();
+                try (var ignored = OutboxTraceContext.makeCurrent(event.getTraceparent())) {
+                    kafkaTemplate.send(topic, event.getAggregateId(), kafkaEvent).get();
+                }
                 outboxProcessingService.markPublished(event.getId(), event.getProcessingToken());
                 meetingMetrics.recordKafkaEventPublished(event.getEventType(), topic);
             } catch (Exception ex) {

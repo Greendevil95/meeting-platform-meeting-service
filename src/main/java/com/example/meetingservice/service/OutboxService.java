@@ -30,6 +30,7 @@ public class OutboxService {
         outboxEvent.setStatus(OutboxStatus.PENDING);
         outboxEvent.setRetryCount(0);
         outboxEvent.setCreatedAt(OffsetDateTime.now());
+        outboxEvent.setTraceparent(OutboxTraceContext.currentTraceparent());
         outboxEvent.setEventJson(toMap(event));
         outboxEventRepository.save(outboxEvent);
     }

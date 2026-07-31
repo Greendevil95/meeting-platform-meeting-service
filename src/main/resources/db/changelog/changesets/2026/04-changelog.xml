@@ -189,4 +189,10 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="2026-04-23-add-outbox-traceparent" author="Denis Bondarev">
+        <addColumn tableName="outbox_events">
+            <column name="traceparent" type="varchar(55)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

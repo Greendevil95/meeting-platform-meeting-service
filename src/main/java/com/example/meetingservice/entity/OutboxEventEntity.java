@@ -53,6 +53,9 @@ public class OutboxEventEntity {
     @Column(name = "processing_token")
     private UUID processingToken;
 
+    @Column(name = "traceparent", length = 55)
+    private String traceparent;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
