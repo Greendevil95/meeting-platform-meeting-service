@@ -48,17 +48,18 @@ public class MeetingService {
     private final MeetingMetrics meetingMetrics;
 
     @Transactional
-    public MeetingResponse create(CreateMeetingRequest request) {
+    public MeetingResponse create(UUID organizerUserId, CreateMeetingRequest request) {
         meetingValidationService.validateTimeRange(request.startAt(), request.endAt());
-        meetingValidationService.validateUsersForMeeting(request.participantUserIds(), request.organizerUserId());
+        meetingValidationService.validateUsersForMeeting(request.participantUserIds(), organizerUserId);
         meetingValidationService.ensureNoScheduleConflicts(request.participantUserIds(), request.startAt(), request.endAt(), null);
 
         MeetingEntity meeting = meetingMapper.toEntity(request);
+        meeting.setOrganizerId(organizerUserId);
         meetingRepository.saveAndFlush(meeting);
 
         var participantEntities = new ArrayList<MeetingParticipantEntity>();
         participantEntities.add(
-                meetingMapper.toParticipantEntity(meeting, new MeetingParticipantRequest(request.organizerUserId(), ORGANIZER))
+                meetingMapper.toParticipantEntity(meeting, new MeetingParticipantRequest(organizerUserId, ORGANIZER))
         );
         participantEntities.addAll(
                 meetingMapper.toParticipantEntities(meeting, ATTENDEE, request.participantUserIds())
@@ -102,9 +103,9 @@ public class MeetingService {
 
     @CachePut(value = CacheConfig.MEETING_CACHE_NAME, key = "#meetingId")
     @Transactional
-    public MeetingResponse update(UUID meetingId, UpdateMeetingRequest request) {
+    public MeetingResponse update(UUID meetingId, CurrentUser currentUser, UpdateMeetingRequest request) {
         var meeting = meetingQueryService.loadActiveMeeting(meetingId);
-        meetingValidationService.assertOrganizer(meeting, request.organizerUserId());
+        meetingValidationService.assertCanManageMeeting(meeting, currentUser);
 
         meetingValidationService.validateTimeRange(request.startAt(), request.endAt());
 
@@ -141,9 +142,9 @@ public class MeetingService {
 
     @CacheEvict(value = CacheConfig.MEETING_CACHE_NAME, key = "#meetingId")
     @Transactional
-    public void cancel(UUID meetingId, CancelMeetingRequest request) {
+    public void cancel(UUID meetingId, CurrentUser currentUser) {
         var meeting = meetingQueryService.loadActiveMeeting(meetingId);
-        meetingValidationService.assertOrganizer(meeting, request.requestorId());
+        meetingValidationService.assertCanManageMeeting(meeting, currentUser);
         meeting.setStatus(MeetingStatus.CANCELLED);
         meetingRepository.saveAndFlush(meeting);
 
@@ -155,16 +156,16 @@ public class MeetingService {
                         OffsetDateTime.now(),
                         meeting.getVersion(),
                         meeting.getId(),
-                        request.requestorId()
+                        currentUser.userId()
                 )
         );
         meetingMetrics.recordMeetingCancelled();
     }
 
     @Transactional
-    public MeetingResponse addParticipant(UUID meetingId, AddParticipantRequest request) {
+    public MeetingResponse addParticipant(UUID meetingId, CurrentUser currentUser, AddParticipantRequest request) {
         MeetingEntity meeting = meetingQueryService.loadActiveMeeting(meetingId);
-        meetingValidationService.assertOrganizer(meeting, request.requestorId());
+        meetingValidationService.assertCanManageMeeting(meeting, currentUser);
         var userId = request.participant().userId();
         meetingValidationService.validateUserActive(userId);
 
@@ -193,13 +194,13 @@ public class MeetingService {
                 )
         );
         meetingMetrics.recordParticipantsAdded(1);
-        return meetingQueryService.getById(meetingId);
+        return meetingQueryService.getById(meetingId, currentUser);
     }
 
     @Transactional
-    public MeetingResponse removeParticipant(UUID meetingId, UUID userId, UUID requestorId) {
+    public MeetingResponse removeParticipant(UUID meetingId, UUID userId, CurrentUser currentUser) {
         MeetingEntity meeting = meetingQueryService.loadActiveMeeting(meetingId);
-        meetingValidationService.assertOrganizer(meeting, requestorId);
+        meetingValidationService.assertCanManageMeeting(meeting, currentUser);
         if (meeting.getOrganizerId().equals(userId)) {
             throw new BadRequestException(
                     "error.organizer.cannot.be.removed",
@@ -226,6 +227,6 @@ public class MeetingService {
                 )
         );
         meetingMetrics.recordParticipantRemoved();
-        return meetingQueryService.getById(meetingId);
+        return meetingQueryService.getById(meetingId, currentUser);
     }
 }

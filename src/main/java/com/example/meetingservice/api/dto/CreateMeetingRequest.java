@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.UUID;
 
 public record CreateMeetingRequest(
-        @NotNull UUID organizerUserId,
         @NotBlank @Size(max = 255) String title,
         @Size(max = 1000) String description,
         @NotNull @Future OffsetDateTime startAt,

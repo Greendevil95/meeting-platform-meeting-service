@@ -18,7 +18,7 @@ public interface MeetingMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "status", constant = "SCHEDULED")
-    @Mapping(target = "organizerId", source = "organizerUserId")
+    @Mapping(target = "organizerId", ignore = true)
     MeetingEntity toEntity(CreateMeetingRequest request);
 
     @Mapping(target = "id", ignore = true)

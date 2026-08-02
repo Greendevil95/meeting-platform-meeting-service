@@ -80,4 +80,9 @@ public class UserReadModelService {
         userReadModelMapper.updateEntity(profile, existing);
         repository.save(existing);
     }
+
+    @Transactional(readOnly = true)
+    public Optional<UserProfile> findUserByKeycloakSubject(String keycloakSubject) {
+        return repository.findByKeycloakSubject(keycloakSubject).map(userReadModelMapper::toProfile);
+    }
 }

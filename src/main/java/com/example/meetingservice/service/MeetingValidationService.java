@@ -2,6 +2,7 @@ package com.example.meetingservice.service;
 
 import com.example.meetingservice.entity.UserStatus;
 import com.example.meetingservice.entity.MeetingEntity;
+import com.example.meetingservice.entity.MeetingParticipantEntity;
 import com.example.meetingservice.exception.BadRequestException;
 import com.example.meetingservice.exception.ConflictException;
 import com.example.meetingservice.exception.ForbiddenException;
@@ -22,9 +23,21 @@ public class MeetingValidationService {
     private final MeetingParticipantRepository participantRepository;
     private final UserReadModelService userReadModelService;
 
-    public void assertOrganizer(MeetingEntity meeting, UUID requestorId) {
-        if (!meeting.getOrganizerId().equals(requestorId)) {
+    public void assertCanManageMeeting(MeetingEntity meeting, CurrentUser currentUser) {
+        if (!currentUser.admin() && !meeting.getOrganizerId().equals(currentUser.userId())) {
             throw new ForbiddenException("Only organizer can modify meeting");
+        }
+    }
+
+    public void assertCanViewMeeting(
+            MeetingEntity meeting,
+            List<MeetingParticipantEntity> participants,
+            CurrentUser currentUser
+    ) {
+        boolean isParticipant = participants.stream()
+                .anyMatch(participant -> participant.getId().getUserId().equals(currentUser.userId()));
+        if (!currentUser.admin() && !meeting.getOrganizerId().equals(currentUser.userId()) && !isParticipant) {
+            throw new ForbiddenException("Only participants can view meeting");
         }
     }
 
